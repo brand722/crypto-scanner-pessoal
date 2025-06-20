@@ -22,20 +22,20 @@ def get_binance_data(timeframe, top_n=200):
     try:
         exchange = ccxt.binance({
             'options': {
-                'defaultType': 'future',  # Especifica o mercado de futuros
+                'defaultType': 'spot',  # Usar mercado Spot para evitar restrições
             },
             'hostname': 'binance.com', # Força um domínio para evitar bloqueio geográfico
         })
         
-        # 1. Buscar todos os mercados e filtrar por Futuros Perpétuos com par USDT
+        # 1. Buscar todos os mercados Spot e filtrar por par USDT
         markets = exchange.load_markets()
         usdt_pairs = {
-            s: m for s, m in markets.items() 
-            if m.get('swap') and m.get('linear') and m.get('quoteId') == 'USDT'
+            s: m for s, m in markets.items()
+            if s.endswith('/USDT') and m.get('spot')
         }
         
         if not usdt_pairs:
-            st.error("Nenhum par de futuros perpétuos com USDT encontrado.")
+            st.error("Nenhum par Spot com USDT encontrado.")
             return pd.DataFrame()
 
         # 2. Buscar tickers para pegar o volume e ordenar
