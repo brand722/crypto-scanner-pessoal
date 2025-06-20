@@ -87,7 +87,11 @@ Use os filtros na barra lateral para refinar sua busca.
 # --- Barra Lateral (Sidebar) com os Filtros ---
 st.sidebar.header("Filtros")
 
-timeframe = st.sidebar.selectbox("Tempo Gráfico", ['15m', '1h', '4h', '1d'], index=2) # Padrão para 4h
+timeframe = st.sidebar.selectbox(
+    "Tempo Gráfico", 
+    ['5m', '15m', '30m', '1h', '2h', '4h', '1d'], 
+    index=5 # Padrão para 4h
+)
 
 rsi_value = st.sidebar.slider("RSI Menor que:", min_value=1, max_value=100, value=30, step=1)
 
