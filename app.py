@@ -24,6 +24,7 @@ def get_binance_data(timeframe, top_n=200):
             'options': {
                 'defaultType': 'future',  # Especifica o mercado de futuros
             },
+            'hostname': 'binance.com', # Força um domínio para evitar bloqueio geográfico
         })
         
         # 1. Buscar todos os mercados e filtrar por Futuros Perpétuos com par USDT
