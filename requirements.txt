@@ -3,4 +3,5 @@ pandas
 requests
 pandas-ta
 numpy
-ccxt 
+ccxt
+python-binance 
