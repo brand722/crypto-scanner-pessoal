@@ -493,6 +493,7 @@ if (storedTimer && storedTimestamp) {
 - ✅ Independente do fuso configurado na VPS
 - ✅ Ajuste mínimo no `app.py` usando `ZoneInfo`
 - ✅ UI: etiqueta "📊 Última atualização" mostra hora correta do Brasil
+- ✅ Deploy aplicado na VPS (Supervisor `streamlit-app` reiniciado)
 
 #### **v2.2.2 - Deploy VPS com HTTPS**
 - ✅ HTTPS habilitado com Let's Encrypt em `https://45-14-194-9.sslip.io`
