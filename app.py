@@ -8,6 +8,7 @@ import ccxt
 import streamlit.components.v1 as components
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
+from zoneinfo import ZoneInfo
 from pathlib import Path
 import json
 import warnings
@@ -27,6 +28,158 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded"
 )
+
+# CSS Global para Responsividade
+st.markdown("""
+<style>
+/* Responsividade geral da aplicação */
+.main .block-container {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+    max-width: none;
+}
+
+/* Título responsivo */
+h1 {
+    font-size: clamp(1.5rem, 4vw, 2.5rem) !important;
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+/* Sidebar responsiva */
+.sidebar .sidebar-content {
+    width: 100%;
+}
+
+/* Botões responsivos */
+.stButton > button {
+    width: 100%;
+    margin: 2px 0;
+    font-size: clamp(0.8rem, 2vw, 1rem);
+    padding: 0.5rem 1rem;
+}
+
+/* Selectbox responsivo */
+.stSelectbox > div > div {
+    font-size: clamp(0.8rem, 2vw, 1rem);
+}
+
+/* Text input responsivo */
+.stTextInput > div > div > input {
+    font-size: clamp(0.8rem, 2vw, 1rem);
+}
+
+/* Métricas responsivas */
+.metric-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: center;
+}
+
+/* Container de status responsivo */
+.status-container {
+    text-align: center;
+    padding: 1rem;
+    margin: 1rem 0;
+}
+
+/* MEDIA QUERIES ESPECÍFICAS */
+
+/* Tablets */
+@media screen and (max-width: 1024px) {
+    .main .block-container {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+    
+    /* Força sidebar a ser mais compacta */
+    .sidebar .sidebar-content {
+        padding: 1rem 0.5rem;
+    }
+}
+
+/* Mobile */
+@media screen and (max-width: 768px) {
+    .main .block-container {
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+    }
+    
+    /* Ajustar espaçamentos */
+    .stSelectbox, .stTextInput {
+        margin-bottom: 0.5rem;
+    }
+    
+    /* Sidebar em mobile */
+    .sidebar .sidebar-content {
+        padding: 0.5rem 0.25rem;
+    }
+    
+    /* Timer mais compacto em mobile */
+    #countdown {
+        font-size: 14px !important;
+    }
+    
+    #progress-ring {
+        width: 30px !important;
+        height: 30px !important;
+    }
+    
+    #progress-ring svg {
+        width: 30px !important;
+        height: 30px !important;
+    }
+}
+
+/* Mobile pequeno */
+@media screen and (max-width: 480px) {
+    h1 {
+        font-size: 1.3rem !important;
+        margin-bottom: 0.5rem;
+    }
+    
+    .stButton > button {
+        font-size: 0.8rem;
+        padding: 0.4rem 0.8rem;
+    }
+    
+    /* Timer ainda mais compacto */
+    #countdown {
+        font-size: 12px !important;
+    }
+    
+    #progress-ring {
+        width: 25px !important;
+        height: 25px !important;
+    }
+}
+
+/* Ajustes para landscape em mobile */
+@media screen and (max-height: 500px) and (orientation: landscape) {
+    .main .block-container {
+        padding-top: 0.5rem;
+        padding-bottom: 0.5rem;
+    }
+    
+    h1 {
+        font-size: 1.2rem !important;
+        margin-bottom: 0.3rem;
+    }
+}
+
+/* Touch-friendly improvements */
+@media (hover: none) and (pointer: coarse) {
+    .stButton > button {
+        min-height: 44px; /* Área de toque mínima recomendada */
+    }
+    
+    .stSelectbox > div > div > div {
+        min-height: 44px;
+    }
+}
+</style>
+""", unsafe_allow_html=True)
 
 # --- Funções de Lógica ---
 
@@ -2299,7 +2452,7 @@ if time_since_check >= check_interval:
     # Se os dados estão muito antigos, força uma atualização
     if hasattr(st.session_state, 'last_refresh_time'):
         time_since_last_refresh = time.time() - st.session_state.last_refresh_time
-        if time_since_last_refresh >= 420:  # 7 minutos (mesmo valor de REFRESH_INTERVAL)
+        if time_since_last_refresh >= 600:  # 10 minutos (mesmo valor de REFRESH_INTERVAL)
             st.session_state.force_update = True
             st.rerun()
 
@@ -2578,7 +2731,7 @@ if 'force_update' not in st.session_state:
 if 'data_update_timestamp' not in st.session_state:
     st.session_state.data_update_timestamp = time.time()
 
-REFRESH_INTERVAL = 420
+REFRESH_INTERVAL = 600
 
 current_time = time.time()
 time_since_refresh = current_time - st.session_state.get('last_refresh_time', 0)
@@ -2618,7 +2771,10 @@ if countdown_remaining <= 60:
     status_message = "🔄 Atualização iminente..."
     status_color = "rgba(255, 165, 0, 0.3)"
 
-last_update_time = datetime.fromtimestamp(st.session_state.data_update_timestamp).strftime("%H:%M:%S")
+last_update_time = datetime.fromtimestamp(
+    st.session_state.data_update_timestamp,
+    tz=ZoneInfo("America/Sao_Paulo")
+).strftime("%H:%M:%S")
 data_age_info = f"📊 Última atualização: {last_update_time}"
 
 timer_key = f"timer_{int(st.session_state.last_refresh_time)}"
@@ -3066,39 +3222,118 @@ else:
         # HTML da tabela (incluindo índice para servir como "linha seletora")
         table_html = df_display.to_html(escape=False, index=True)
 
-        # CSS para congelar o cabeçalho
+        # CSS para congelar o cabeçalho e responsividade
         st.markdown(
             """
             <style>
+            /* Container principal da tabela - RESPONSIVO */
             .table-container {
                 max-height: 650px;
                 overflow-y: auto;
+                overflow-x: auto; /* ✅ Scroll horizontal para telas pequenas */
+                width: 100%;
+                border-radius: 8px;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
             }
+            
+            /* Cabeçalho fixo */
             .table-container thead th {
                 position: sticky;
                 top: 0;
-                background-color: #0E1117; /* mesma cor do tema escuro do Streamlit */
+                background-color: #0E1117 !important;
                 z-index: 2;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
             }
+            
+            /* Tabela responsiva */
             .table-container table {
                 border-collapse: collapse;
+                width: 100%;
+                min-width: 800px; /* ✅ Largura mínima para manter legibilidade */
+                font-size: 14px;
             }
+            
+            /* Células da tabela - RESPONSIVAS */
             .table-container th,
             .table-container td {
                 text-align: center !important;
                 vertical-align: middle !important;
-                padding: 8px !important;
+                padding: 12px 8px !important; /* ✅ Mais padding para touch */
+                border: 1px solid #333;
+                white-space: nowrap; /* ✅ Evita quebra de linha */
             }
+            
+            /* Efeito hover melhorado */
             .table-container tbody tr:hover {
                 background-color: #262730 !important;
                 cursor: pointer;
-                box-shadow: 0 2px 5px rgba(255, 255, 255, 0.1);
-                transform: scale(1.001);
+                box-shadow: 0 4px 12px rgba(255, 255, 255, 0.15);
+                transform: scale(1.002);
                 transition: all 0.2s ease;
                 border: 2px solid #8A2BE2 !important;
             }
+            
             .table-container tbody tr {
                 transition: all 0.2s ease;
+            }
+            
+            /* MEDIA QUERIES PARA RESPONSIVIDADE */
+            
+            /* Tablets (768px - 1024px) */
+            @media screen and (max-width: 1024px) {
+                .table-container {
+                    max-height: 500px;
+                }
+                .table-container table {
+                    font-size: 12px;
+                    min-width: 700px;
+                }
+                .table-container th,
+                .table-container td {
+                    padding: 10px 6px !important;
+                }
+            }
+            
+            /* Mobile Large (481px - 767px) */
+            @media screen and (max-width: 767px) {
+                .table-container {
+                    max-height: 400px;
+                }
+                .table-container table {
+                    font-size: 11px;
+                    min-width: 600px;
+                }
+                .table-container th,
+                .table-container td {
+                    padding: 8px 4px !important;
+                }
+            }
+            
+            /* Mobile Small (até 480px) */
+            @media screen and (max-width: 480px) {
+                .table-container {
+                    max-height: 350px;
+                }
+                .table-container table {
+                    font-size: 10px;
+                    min-width: 500px;
+                }
+                .table-container th,
+                .table-container td {
+                    padding: 6px 3px !important;
+                }
+                .table-container tbody tr:hover {
+                    transform: none; /* ✅ Remove transform em mobile */
+                }
+            }
+            
+            /* Melhorias gerais para touch devices */
+            @media (hover: none) and (pointer: coarse) {
+                .table-container tbody tr:hover {
+                    background-color: #262730 !important;
+                    transform: none;
+                    box-shadow: 0 2px 8px rgba(255, 255, 255, 0.1);
+                }
             }
             </style>
             """,

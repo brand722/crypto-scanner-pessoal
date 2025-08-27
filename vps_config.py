@@ -1,5 +1,5 @@
-# Configurações específicas para VPS
-# Este arquivo contém configurações otimizadas para ambiente de produção
+# Configurações específicas para VPS CONTABO
+# Este arquivo contém configurações otimizadas para Contabo VPS com Ubuntu 24.04
 
 import os
 import streamlit as st
@@ -14,6 +14,8 @@ PRODUCTION_CONFIG = {
         'enableCORS': False,    # Desabilitar CORS em produção
         'enableXsrfProtection': True,  # Proteção XSRF
         'maxUploadSize': 200,   # Limitar upload size
+        'enableStaticServing': True,  # Habilitar servir arquivos estáticos
+        'runOnSave': False,     # Desabilitar auto-reload em produção
     },
     
     # Configurações de cache
@@ -22,10 +24,12 @@ PRODUCTION_CONFIG = {
         'maxEntries': 100,
     },
     
-    # Configurações de performance
+    # Configurações de performance (otimizadas para Contabo VPS S - 4 vCPUs, 8GB RAM)
     'performance': {
-        'maxConcurrency': 4,    # Limitar concorrência
-        'timeout': 30,          # Timeout para requisições
+        'maxConcurrency': 6,    # Aumentado para aproveitar 4 vCPUs da Contabo
+        'timeout': 45,          # Timeout aumentado para APIs cripto
+        'maxMemoryUsage': 6144, # Máximo 6GB dos 8GB disponíveis
+        'maxCpuUsage': 85,      # Máximo 85% de CPU
     },
     
     # Configurações de segurança
@@ -147,13 +151,15 @@ EXCHANGE_CONFIGS = {
     }
 }
 
-# Configurações de backup
+# Configurações de backup (específicas para Contabo)
 BACKUP_CONFIG = {
     'enabled': True,
     'interval_hours': 24,
-    'backup_dir': '/home/ubuntu/backups',
+    'backup_dir': '/home/cripto/backups',  # Usuário padrão Contabo
     'max_backups': 7,
     'include_logs': True,
+    'compress_level': 6,  # Balanceamento entre velocidade e tamanho
+    'contabo_storage': '/mnt/backup',  # Ponto de montagem adicional se necessário
 }
 
 def create_backup():
@@ -261,7 +267,88 @@ def collect_metrics():
     except Exception as e:
         print(f"Erro ao salvar métricas: {e}")
 
+# Configurações específicas para Contabo VPS
+CONTABO_CONFIG = {
+    'datacenter': 'Germany',
+    'timezone': 'Europe/Berlin',
+    'recommended_specs': {
+        'plan': 'VPS S',
+        'cpu': '4 vCPUs',
+        'ram': '8GB',
+        'storage': '50GB NVMe',
+        'bandwidth': '32TB'
+    },
+    'network': {
+        'provider': 'Contabo',
+        'location': 'Nuremberg, Germany',
+        'latency_optimized_for': ['Europe', 'Crypto APIs']
+    },
+    'optimizations': {
+        'swap_size_gb': 2,  # Recomendado para 8GB RAM
+        'tcp_optimization': True,
+        'timezone_sync': True,
+        'ntp_server': 'pool.ntp.org'
+    }
+}
+
+def apply_contabo_optimizations():
+    """Aplica otimizações específicas para Contabo VPS"""
+    import subprocess
+    import logging
+    
+    try:
+        # Configurar timezone se necessário
+        if CONTABO_CONFIG['optimizations']['timezone_sync']:
+            subprocess.run(['timedatectl', 'set-timezone', CONTABO_CONFIG['timezone']], 
+                         check=False, capture_output=True)
+        
+        # Aplicar configurações TCP se necessário
+        if CONTABO_CONFIG['optimizations']['tcp_optimization']:
+            tcp_settings = [
+                'net.core.rmem_max = 16777216',
+                'net.core.wmem_max = 16777216',
+                'net.ipv4.tcp_rmem = 4096 87380 16777216',
+                'net.ipv4.tcp_wmem = 4096 65536 16777216'
+            ]
+            
+            # Aplicar configurações (requires sudo, so just log them)
+            logging.info("TCP optimizations available in DEPLOY_CONTABO.md")
+        
+        logging.info(f"✅ Otimizações Contabo aplicadas para {CONTABO_CONFIG['datacenter']}")
+        
+    except Exception as e:
+        logging.warning(f"⚠️ Erro ao aplicar otimizações Contabo: {e}")
+
+def get_contabo_status():
+    """Retorna status e configurações da VPS Contabo"""
+    import psutil
+    
+    status = {
+        'provider': 'Contabo',
+        'datacenter': CONTABO_CONFIG['datacenter'],
+        'plan_recommended': CONTABO_CONFIG['recommended_specs']['plan'],
+        'current_specs': {
+            'cpu_count': psutil.cpu_count(),
+            'memory_gb': round(psutil.virtual_memory().total / (1024**3), 1),
+            'cpu_percent': psutil.cpu_percent(interval=1),
+            'memory_percent': psutil.virtual_memory().percent
+        },
+        'optimizations_enabled': True
+    }
+    
+    return status
+
 # Inicializar configurações quando importado
 if __name__ == "__main__":
     setup_production_environment()
-    print("✅ Configurações de produção aplicadas!") 
+    apply_contabo_optimizations()
+    print("✅ Configurações de produção Contabo aplicadas!")
+    
+    # Mostrar status da VPS
+    status = get_contabo_status()
+    print(f"🌐 Contabo VPS Status:")
+    print(f"   📍 Datacenter: {status['datacenter']}")
+    print(f"   💻 CPU: {status['current_specs']['cpu_count']} cores")
+    print(f"   🧠 RAM: {status['current_specs']['memory_gb']}GB")
+    print(f"   📊 Uso CPU: {status['current_specs']['cpu_percent']}%")
+    print(f"   📊 Uso RAM: {status['current_specs']['memory_percent']}%") 

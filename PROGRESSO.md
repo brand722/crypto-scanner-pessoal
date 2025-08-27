@@ -488,7 +488,27 @@ if (storedTimer && storedTimestamp) {
 
 ### 📝 **LOGS DE VERSÃO**
 
-#### **v2.2.0 - Pares BTC Implementados (ATUAL)**
+#### **v2.2.3 - Horário de Brasília fixo (ATUAL)**
+- ✅ Exibição da hora padronizada para Brasília (`America/Sao_Paulo`)
+- ✅ Independente do fuso configurado na VPS
+- ✅ Ajuste mínimo no `app.py` usando `ZoneInfo`
+- ✅ UI: etiqueta "📊 Última atualização" mostra hora correta do Brasil
+
+#### **v2.2.2 - Deploy VPS com HTTPS**
+- ✅ HTTPS habilitado com Let's Encrypt em `https://45-14-194-9.sslip.io`
+- ✅ Nginx proxy ajustado (headers de WebSocket corretos; respostas 101 OK no `/_stcore/stream`)
+- ✅ Redirecionamento automático HTTP → HTTPS
+- ✅ Firewall UFW ativo (80/443 liberadas; 22 para SSH)
+- ✅ Renovação automática configurada (Certbot)
+- ✅ Correção no `pandas_ta` (troca `NaN` → `nan`) para compatibilidade com NumPy atual
+
+#### **v2.2.1 - Timer 10 Minutos**
+- ✅ Alterado tempo de atualização de 7 para 10 minutos
+- ✅ REFRESH_INTERVAL atualizado para 600 segundos
+- ✅ Sistema de auto-refresh ajustado
+- ✅ Performance otimizada com menos atualizações
+
+#### **v2.2.0 - Pares BTC Implementados**
 - ✅ Adicionados pares BTC para Binance e KuCoin
 - ✅ Interface expandida para 10 exchanges
 - ✅ Função centralizada de indicadores
@@ -533,7 +553,82 @@ if (storedTimer && storedTimestamp) {
 
 ---
 
-**Última atualização**: PARES BTC IMPLEMENTADOS - Binance e KuCoin com pares BTC adicionados
-**Status**: ✅ 10 EXCHANGES + PARES BTC - Sistema completo com diversificação USDT/BTC
-**Data**: Dezembro 2024 - Pares BTC funcionando, interface expandida, indicadores centralizados
-**Nova Funcionalidade**: Diversificação completa com 400+ pares BTC adicionais 
+### 📱 RESPONSIVIDADE COMPLETA IMPLEMENTADA (RECÉM IMPLEMENTADO - $(date '+%d/%m/%Y'))
+
+#### **Problema: Interface Não Responsiva**
+- ❌ **Aplicação não adaptava para mobile** - Tabela cortada em telas pequenas
+- ❌ **Sem media queries** - Tamanhos fixos para todos dispositivos
+- ❌ **Botões pequenos em touch** - Área de toque inadequada
+- ❌ **Timer desproporcional** - Mesmo tamanho em todas as telas
+- ❌ **Scroll apenas vertical** - Muitas colunas inacessíveis em mobile
+
+#### **✅ Soluções Implementadas:**
+
+##### **1. 📱 Sistema de Breakpoints Completo**
+```css
+/* Desktop (1025px+) - Layout completo */
+.table-container { max-height: 650px; font-size: 14px; }
+
+/* Tablet (768px-1024px) - Otimizado */
+@media screen and (max-width: 1024px) {
+    .table-container { max-height: 500px; font-size: 12px; }
+}
+
+/* Mobile Large (481px-767px) - Compacto */
+@media screen and (max-width: 767px) {
+    .table-container { max-height: 400px; font-size: 11px; }
+}
+
+/* Mobile Small (até 480px) - Ultra compacto */
+@media screen and (max-width: 480px) {
+    .table-container { max-height: 350px; font-size: 10px; }
+}
+```
+
+##### **2. 🖱️ Touch Optimization**
+```css
+/* Área de toque mínima 44px (padrão iOS/Android) */
+@media (hover: none) and (pointer: coarse) {
+    .stButton > button { min-height: 44px; }
+    .stSelectbox > div > div > div { min-height: 44px; }
+}
+```
+
+##### **3. 📊 Tabela Responsiva Avançada**
+- ✅ **Scroll horizontal** - `overflow-x: auto` para colunas
+- ✅ **Largura mínima adaptativa** - 800px→700px→600px→500px
+- ✅ **Cabeçalho fixo** - Sempre visível com `position: sticky`
+- ✅ **Padding adaptativo** - 12px→10px→8px→6px por tela
+
+##### **4. 🎨 Interface Fluida**
+```css
+/* Título responsivo com clamp */
+h1 { font-size: clamp(1.5rem, 4vw, 2.5rem) !important; }
+
+/* Timer adaptativo */
+#countdown { font-size: 14px; } /* Mobile: 12px */
+#progress-ring { width: 30px; height: 30px; } /* Mobile: 25px */
+```
+
+##### **5. 🔄 Orientação Inteligente**
+```css
+/* Landscape em mobile - aproveita altura limitada */
+@media screen and (max-height: 500px) and (orientation: landscape) {
+    .main .block-container { padding-top: 0.5rem; }
+    h1 { font-size: 1.2rem !important; }
+}
+```
+
+#### **📊 Resultado Final:**
+- 📱 **100% Mobile-friendly** - iPhone, Android, tablets
+- 💻 **Desktop otimizado** - Aproveitamento total da tela
+- 🎯 **Touch-friendly** - Áreas de toque adequadas
+- 📊 **Dados sempre legíveis** - Scroll inteligente
+- 🎨 **Visual consistente** - Mantém identidade em todas as telas
+
+---
+
+**Última atualização**: RESPONSIVIDADE COMPLETA + TIMER 10 MINUTOS
+**Status**: ✅ 10 EXCHANGES + PARES BTC + 100% RESPONSIVO - Sistema completo e multi-device
+**Data**: Dezembro 2024 - Aplicação otimizada para todas as telas
+**Nova Configuração**: Interface adaptativa para desktop, tablet e mobile 
